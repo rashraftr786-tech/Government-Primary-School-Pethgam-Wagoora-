@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — GPS Pethgam Wagoora</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>" />
+</head>
+<body>
+
+<div id="globalLoader" style="display:none;">
+  <div class="spinner"></div>
+  <p style="color:var(--primary);font-weight:600;">Loading…</p>
+</div>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="school-brand">
+      <div class="school-logo">🏫</div>
+      <div>
+        <div class="school-name">GPS Pethgam Wagoora</div>
+        <div class="school-sub">Admin Panel</div>
+      </div>
+    </div>
+    <div class="header-user">
+      <img src="" alt="Admin" class="header-avatar" id="headerAvatar" />
+      <span id="headerName" style="color:#fff;font-weight:600;font-size:.9rem;"></span>
+      <button class="btn-logout" onclick="handleLogout()">Logout</button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ MAIN DASHBOARD ════════════════════════════════════ -->
+<main class="dashboard-layout">
+
+  <!-- Profile Card -->
+  <div class="profile-card">
+    <img src="" alt="Admin" class="profile-card-avatar" id="profileAvatar" />
+    <div class="profile-card-info">
+      <div class="profile-card-name" id="profileName">Admin</div>
+      <div class="profile-card-role">⚙️ System Administrator</div>
+    </div>
+    <div class="profile-card-stats">
+      <div class="stat-badge"><span class="stat-val" id="statStudents">–</span><span class="stat-label">👥 Students</span></div>
+      <div class="stat-badge"><span class="stat-val" id="statTeachers">–</span><span class="stat-label">👨‍🏫 Teachers</span></div>
+      <div class="stat-badge"><span class="stat-val" id="statQuestions">–</span><span class="stat-label">📝 Questions</span></div>
+      <div class="stat-badge"><span class="stat-val" id="statAttempts">–</span><span class="stat-label">✅ Attempts</span></div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+    <button class="tab" onclick="switchTab('teachers')">👨‍🏫 Teachers</button>
+    <button class="tab" onclick="switchTab('students')">👥 Students</button>
+    <button class="tab" onclick="switchTab('questions')">📝 Questions</button>
+    <button class="tab" onclick="switchTab('leaderboards')">🏆 Leaderboards</button>
+  </div>
+
+  <!-- ─── TAB: OVERVIEW ────────────────────────────────── -->
+  <div class="tab-content active" id="tab-overview">
+
+    <div class="cards-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));">
+      <div class="stats-widget">
+        <div class="stat-number" id="ovStudents">–</div>
+        <div class="stat-desc">👥 Total Students</div>
+      </div>
+      <div class="stats-widget">
+        <div class="stat-number" id="ovTeachers">–</div>
+        <div class="stat-desc">👨‍🏫 Total Teachers</div>
+      </div>
+      <div class="stats-widget">
+        <div class="stat-number" id="ovQuestions">–</div>
+        <div class="stat-desc">📝 MCQ Questions</div>
+      </div>
+      <div class="stats-widget">
+        <div class="stat-number" id="ovAttempts">–</div>
+        <div class="stat-desc">✅ Total Attempts</div>
+      </div>
+      <div class="stats-widget">
+        <div class="stat-number" id="ovCorrect">–</div>
+        <div class="stat-desc">🎯 Correct Answers</div>
+      </div>
+      <div class="stats-widget">
+        <div class="stat-number" id="ovCoins">–</div>
+        <div class="stat-desc">🪙 Coins Distributed</div>
+      </div>
+    </div>
+
+    <!-- Class distribution -->
+    <div class="card">
+      <div class="section-title">📊 Students by Class</div>
+      <div id="classDistribution">
+        <div class="empty-state"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Subject distribution -->
+    <div class="card">
+      <div class="section-title">📚 Questions by Subject</div>
+      <div id="subjectDistribution">
+        <div class="empty-state"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="card">
+      <div class="section-title">⚡ Quick Actions</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem;">
+        <button class="btn btn-accent" onclick="resetWeeklyLeaderboard()">🔄 Reset Weekly LB</button>
+        <button class="btn btn-accent" onclick="resetMonthlyLeaderboard()">🔄 Reset Monthly LB</button>
+        <button class="btn btn-outline" onclick="exportData()">📥 Export Student List</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TAB: TEACHERS ────────────────────────────────── -->
+  <div class="tab-content" id="tab-teachers">
+    <div class="card">
+      <div class="section-title">👨‍🏫 All Teachers</div>
+      <div id="teachersList">
+        <div class="empty-state"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TAB: STUDENTS ────────────────────────────────── -->
+  <div class="tab-content" id="tab-students">
+    <div class="filter-bar">
+      <select id="studentClassFilter" onchange="loadStudents()">
+        <option value="">All Classes</option>
+        <option value="1">Class 1</option><option value="2">Class 2</option>
+        <option value="3">Class 3</option><option value="4">Class 4</option>
+        <option value="5">Class 5</option><option value="6">Class 6</option>
+        <option value="7">Class 7</option><option value="8">Class 8</option>
+      </select>
+      <input type="text" id="studentSearch" placeholder="Search by name…"
+             oninput="filterStudentsByName()" style="max-width:220px;" />
+    </div>
+    <div class="card" style="overflow-x:auto;">
+      <div id="studentsList">
+        <div class="empty-state"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TAB: QUESTIONS ───────────────────────────────── -->
+  <div class="tab-content" id="tab-questions">
+    <div class="filter-bar">
+      <select id="qAdminClass" onchange="loadAllQuestions()">
+        <option value="">All Classes</option>
+        <option value="1">Class 1</option><option value="2">Class 2</option>
+        <option value="3">Class 3</option><option value="4">Class 4</option>
+        <option value="5">Class 5</option><option value="6">Class 6</option>
+        <option value="7">Class 7</option><option value="8">Class 8</option>
+      </select>
+      <select id="qAdminSubject" onchange="loadAllQuestions()">
+        <option value="">All Subjects</option>
+        <option value="English">English</option>
+        <option value="Mathematics">Mathematics</option>
+        <option value="Urdu">Urdu</option>
+        <option value="Kashmiri">Kashmiri</option>
+        <option value="EVS">EVS</option>
+        <option value="Science">Science</option>
+        <option value="Social Science">Social Science</option>
+      </select>
+      <select id="qAdminTeacher" onchange="loadAllQuestions()">
+        <option value="">All Teachers</option>
+      </select>
+    </div>
+    <div id="adminQuestionsList">
+      <div class="empty-state"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- ─── TAB: LEADERBOARDS ────────────────────────────── -->
+  <div class="tab-content" id="tab-leaderboards">
+    <div class="tabs" role="tablist">
+      <button class="tab active" onclick="switchLbTab('class')">Class</button>
+      <button class="tab" onclick="switchLbTab('weekly')">Weekly</button>
+      <button class="tab" onclick="switchLbTab('monthly')">Monthly</button>
+      <button class="tab" onclick="switchLbTab('subject')">Subject</button>
+    </div>
+
+    <!-- Class LB selector -->
+    <div id="adminLbClassSelector" class="filter-bar" style="margin-top:.5rem;">
+      <label style="font-weight:600;font-size:.9rem;">Select Class:</label>
+      <select id="adminLbClass" onchange="loadAdminClassLB()">
+        <option value="1">Class 1</option><option value="2">Class 2</option>
+        <option value="3">Class 3</option><option value="4">Class 4</option>
+        <option value="5">Class 5</option><option value="6">Class 6</option>
+        <option value="7">Class 7</option><option value="8">Class 8</option>
+      </select>
+    </div>
+
+    <div class="card" id="adminLbCard">
+      <div id="adminLbTable"><div class="empty-state"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ─── STUDENT DETAILS MODAL ────────────────────────────── -->
+<div class="modal-overlay" id="studentDetailModal" style="display:none;" onclick="closeModal('studentDetailModal',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">👤 Student Details</span>
+      <button class="modal-close" onclick="document.getElementById('studentDetailModal').style.display='none'">✕</button>
+    </div>
+    <div id="studentDetailContent"></div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+
+<script>
+let currentUser = null;
+let userData    = null;
+let allStudents = [];
+let allTeachers = [];
+let allQuestions = [];
+let currentAdminLbTab = 'class';
+
+// ─── AUTH ────────────────────────────────────────────────
+auth.onAuthStateChanged(async (user) => {
+  if (!user) { window.location.href = '../index.html'; return; }
+  showLoader(true);
+  currentUser = user;
+  try {
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (!doc.exists || doc.data().role !== 'admin') {
+      await auth.signOut(); window.location.href = '../index.html'; return;
+    }
+    userData = { id: doc.id, ...doc.data() };
+    initAdmin();
+  } catch(e) { showLoader(false); showToast('Error loading admin panel', 'error'); }
+});
+
+async function initAdmin() {
+  renderAdminProfile();
+  await Promise.all([loadOverview(), loadTeachers(), loadStudents(), loadAllQuestions()]);
+  loadAdminClassLB();
+  showLoader(false);
+}
+
+function renderAdminProfile() {
+  const av = userData.photoURL || defaultAvatar(userData.name || 'Admin');
+  document.getElementById('profileAvatar').src = av;
+  document.getElementById('headerAvatar').src  = av;
+  document.getElementById('profileName').textContent = userData.name || 'Admin';
+  document.getElementById('headerName').textContent  = userData.name || 'Admin';
+}
+
+function defaultAvatar(name) {
+  return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=1a7a3c&color=fff&size=128';
+}
+
+// ─── OVERVIEW ────────────────────────────────────────────
+async function loadOverview() {
+  try {
+    const [students, teachers, questions, attempts] = await Promise.all([
+      db.collection('users').where('role','==','student').get(),
+      db.collection('users').where('role','==','teacher').get(),
+      db.collection('assignments').get(),
+      db.collection('attempts').get()
+    ]);
+
+    const sCount = students.size;
+    const tCount = teachers.size;
+    const qCount = questions.size;
+    const aCount = attempts.size;
+    let correctCount = 0, totalCoins = 0;
+    attempts.forEach(d => {
+      if (d.data().isCorrect) { correctCount++; totalCoins += COINS_PER_CORRECT; }
+    });
+
+    // Update header stats
+    ['statStudents','ovStudents'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = sCount;
+    });
+    ['statTeachers','ovTeachers'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = tCount;
+    });
+    ['statQuestions','ovQuestions'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = qCount;
+    });
+    ['statAttempts','ovAttempts'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = aCount;
+    });
+    document.getElementById('ovCorrect').textContent = correctCount;
+    document.getElementById('ovCoins').textContent   = totalCoins;
+
+    // Class distribution
+    const classCounts = {};
+    students.forEach(d => {
+      const c = d.data().class;
+      classCounts[c] = (classCounts[c] || 0) + 1;
+    });
+    const maxClass = Math.max(...Object.values(classCounts), 1);
+    document.getElementById('classDistribution').innerHTML =
+      Object.keys(classCounts).sort((a,b) => a-b).map(c => `
+        <div style="margin-bottom:.7rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:.2rem;font-size:.88rem;">
+            <span style="font-weight:600;">Class ${c}</span>
+            <span>${classCounts[c]} students</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${(classCounts[c]/maxClass)*100}%"></div></div>
+        </div>`).join('') || '<p style="color:var(--gray-400)">No students yet</p>';
+
+    // Subject distribution
+    const subCounts = {};
+    questions.forEach(d => {
+      const s = d.data().subject;
+      subCounts[s] = (subCounts[s] || 0) + 1;
+    });
+    const maxSub = Math.max(...Object.values(subCounts), 1);
+    document.getElementById('subjectDistribution').innerHTML =
+      Object.entries(subCounts).sort((a,b) => b[1]-a[1]).map(([s,c]) => `
+        <div style="margin-bottom:.7rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:.2rem;font-size:.88rem;">
+            <span style="font-weight:600;">${s}</span>
+            <span>${c} questions</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${(c/maxSub)*100}%"></div></div>
+        </div>`).join('') || '<p style="color:var(--gray-400)">No questions yet</p>';
+
+  } catch(e) { console.error(e); }
+}
+
+// ─── TEACHERS ────────────────────────────────────────────
+async function loadTeachers() {
+  const el = document.getElementById('teachersList');
+  try {
+    const snap = await db.collection('users').where('role','==','teacher').orderBy('createdAt','desc').get();
+    allTeachers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Populate teacher filter in questions tab
+    const tf = document.getElementById('qAdminTeacher');
+    if (tf) {
+      tf.innerHTML = '<option value="">All Teachers</option>';
+      allTeachers.forEach(t => {
+        tf.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+      });
+    }
+
+    if (!allTeachers.length) {
+      el.innerHTML = `<div class="empty-state"><span class="empty-icon">👨‍🏫</span><p>No teachers registered yet</p></div>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead><tr>
+          <th>Photo</th><th>Name</th><th>Subject</th><th>Email</th><th>Joined</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${allTeachers.map(t => {
+            const av = t.photoURL || defaultAvatar(t.name);
+            const joined = t.createdAt ? new Date(t.createdAt.seconds*1000).toLocaleDateString() : '—';
+            return `
+              <tr>
+                <td><img src="${av}" class="table-avatar" alt="" onerror="this.src='${defaultAvatar(t.name)}'" /></td>
+                <td><strong>${t.name}</strong></td>
+                <td><span class="meta-tag subject">${t.subject}</span></td>
+                <td style="font-size:.82rem;">${t.email || '—'}</td>
+                <td style="font-size:.82rem;">${joined}</td>
+                <td>
+                  <button class="btn btn-danger btn-sm" onclick="deleteUser('${t.id}','teacher')">🗑 Remove</button>
+                </td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+// ─── STUDENTS ────────────────────────────────────────────
+async function loadStudents() {
+  const el  = document.getElementById('studentsList');
+  const cls = document.getElementById('studentClassFilter').value;
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+
+  try {
+    let query = db.collection('users').where('role','==','student');
+    if (cls) query = query.where('class','==',parseInt(cls));
+    const snap = await query.orderBy('coins','desc').get();
+    allStudents = snap.docs.map((d,i) => ({ id: d.id, rank: i+1, ...d.data() }));
+    renderStudentsTable();
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+function renderStudentsTable() {
+  const el  = document.getElementById('studentsList');
+  const q   = (document.getElementById('studentSearch').value || '').toLowerCase();
+  const filtered = allStudents.filter(s => !q || s.name.toLowerCase().includes(q));
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state"><span class="empty-icon">👥</span><p>No students found</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead><tr>
+        <th>#</th><th>Photo</th><th>Name</th><th>Class</th><th>🪙 Coins</th><th>Weekly</th><th>Monthly</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map((s,i) => {
+          const av = s.photoURL || defaultAvatar(s.name);
+          return `
+            <tr>
+              <td><strong>${i+1}</strong></td>
+              <td><img src="${av}" class="table-avatar" alt="" onerror="this.src='${defaultAvatar(s.name)}'" /></td>
+              <td><strong>${s.name}</strong></td>
+              <td><span class="meta-tag">Class ${s.class}</span></td>
+              <td><span class="coin-display"><span class="coin-icon">🪙</span>${s.coins||0}</span></td>
+              <td>${s.weeklyCoins||0}</td>
+              <td>${s.monthlyCoins||0}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="viewStudentDetail('${s.id}')">👁 View</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser('${s.id}','student')">🗑</button>
+              </td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+function filterStudentsByName() { renderStudentsTable(); }
+
+// ─── ALL QUESTIONS ────────────────────────────────────────
+async function loadAllQuestions() {
+  const el      = document.getElementById('adminQuestionsList');
+  const cls     = document.getElementById('qAdminClass').value;
+  const sub     = document.getElementById('qAdminSubject').value;
+  const teacher = document.getElementById('qAdminTeacher').value;
+  el.innerHTML  = '<div class="empty-state"><div class="spinner"></div></div>';
+
+  try {
+    let query = db.collection('assignments');
+    if (cls)     query = query.where('class','==',parseInt(cls));
+    if (sub)     query = query.where('subject','==',sub);
+    if (teacher) query = query.where('teacherId','==',teacher);
+    const snap = await query.orderBy('createdAt','desc').get();
+    allQuestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (!allQuestions.length) {
+      el.innerHTML = `<div class="empty-state"><span class="empty-icon">📭</span><p>No questions found</p></div>`;
+      return;
+    }
+
+    el.innerHTML = allQuestions.map(q => `
+      <div class="mcq-card" id="adminCard_${q.id}">
+        <div class="mcq-meta">
+          <span class="meta-tag">Class ${q.class}</span>
+          <span class="meta-tag subject">${q.subject}</span>
+          <span class="meta-tag lesson">📖 ${q.lesson}</span>
+          <span class="meta-tag date">📅 ${q.date}</span>
+          <span class="meta-tag" style="background:#e9d8fd;color:#553c9a;">👨‍🏫 ${q.teacherName||'Teacher'}</span>
+        </div>
+        <div class="mcq-question">Q. ${q.question}</div>
+        <ul class="mcq-options" style="pointer-events:none;">
+          ${['A','B','C','D'].map((l,i) => {
+            const val = [q.optionA,q.optionB,q.optionC,q.optionD][i];
+            if (!val) return '';
+            const isCor = l === q.correctAnswer;
+            return `<li class="mcq-option ${isCor ? 'correct' : ''}" style="pointer-events:none;">
+              <input type="radio" disabled ${isCor ? 'checked':''} />
+              <span><strong>${l}.</strong> ${val}</span>
+              ${isCor ? '<span class="correct-indicator">✓ Correct</span>' : ''}
+            </li>`;
+          }).join('')}
+        </ul>
+        <div class="mcq-actions">
+          <button class="btn btn-danger btn-sm" onclick="adminDeleteQuestion('${q.id}')">🗑 Delete Question</button>
+        </div>
+      </div>`).join('');
+
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+// ─── ADMIN LEADERBOARDS ───────────────────────────────────
+async function loadAdminClassLB() {
+  const cls = parseInt(document.getElementById('adminLbClass').value) || 1;
+  const el  = document.getElementById('adminLbTable');
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  try {
+    const snap = await db.collection('users')
+      .where('role','==','student').where('class','==',cls)
+      .orderBy('coins','desc').limit(20).get();
+    const students = snap.docs.map((d,i) => ({ rank:i+1, uid:d.id, ...d.data() }));
+    el.innerHTML = renderAdminLBTable(students);
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function loadAdminWeeklyLB() {
+  const el = document.getElementById('adminLbTable');
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  try {
+    const snap = await db.collection('users').where('role','==','student')
+      .orderBy('weeklyCoins','desc').limit(20).get();
+    const students = snap.docs.map((d,i) => ({ rank:i+1, coins:d.data().weeklyCoins||0, uid:d.id, ...d.data() }));
+    el.innerHTML = renderAdminLBTable(students);
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function loadAdminMonthlyLB() {
+  const el = document.getElementById('adminLbTable');
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  try {
+    const snap = await db.collection('users').where('role','==','student')
+      .orderBy('monthlyCoins','desc').limit(20).get();
+    const students = snap.docs.map((d,i) => ({ rank:i+1, coins:d.data().monthlyCoins||0, uid:d.id, ...d.data() }));
+    el.innerHTML = renderAdminLBTable(students);
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+async function loadAdminSubjectLB(subject) {
+  const el = document.getElementById('adminLbTable');
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  try {
+    const field = `subjectCoins.${subject}`;
+    const snap = await db.collection('users').where('role','==','student')
+      .orderBy(field,'desc').limit(20).get();
+    const students = snap.docs.map((d,i) => ({
+      rank:i+1,
+      coins: (d.data().subjectCoins||{})[subject]||0,
+      uid:d.id, ...d.data()
+    }));
+    el.innerHTML = renderAdminLBTable(students);
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+function renderAdminLBTable(students) {
+  if (!students.length) return `<div class="empty-state"><span class="empty-icon">🏆</span><p>No data yet</p></div>`;
+  const medals = ['🥇','🥈','🥉'];
+  return `
+    <div style="overflow-x:auto;">
+    <table class="leaderboard-table">
+      <thead><tr>
+        <th>Rank</th><th>Student</th><th>Class</th><th>🪙 Coins</th><th>Weekly</th><th>Monthly</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${students.map((s,i) => `
+          <tr class="rank-${i+1}">
+            <td>${medals[i]||s.rank}</td>
+            <td>
+              <img src="${s.photoURL||defaultAvatar(s.name)}" class="lb-avatar" alt=""
+                   onerror="this.src='${defaultAvatar(s.name)}'" />
+              ${s.name}
+            </td>
+            <td>Class ${s.class}</td>
+            <td><strong>${s.coins||0}</strong></td>
+            <td>${s.weeklyCoins||0}</td>
+            <td>${s.monthlyCoins||0}</td>
+            <td><button class="btn btn-outline btn-sm" onclick="viewStudentDetail('${s.uid}')">👁</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+function switchLbTab(tab) {
+  currentAdminLbTab = tab;
+  const tabBtns = document.querySelectorAll('#tab-leaderboards > .tabs .tab');
+  const ids = ['class','weekly','monthly','subject'];
+  tabBtns.forEach((b,i) => b.classList.toggle('active', ids[i] === tab));
+
+  const classSelector = document.getElementById('adminLbClassSelector');
+
+  if (tab === 'class') {
+    classSelector.style.display = 'flex';
+    loadAdminClassLB();
+  } else if (tab === 'weekly') {
+    classSelector.style.display = 'none';
+    loadAdminWeeklyLB();
+  } else if (tab === 'monthly') {
+    classSelector.style.display = 'none';
+    loadAdminMonthlyLB();
+  } else if (tab === 'subject') {
+    classSelector.style.display = 'none';
+    const el = document.getElementById('adminLbTable');
+    el.innerHTML = `
+      <div class="subject-chips" style="margin-bottom:1rem;">
+        ${ALL_SUBJECTS.map(s => `<button class="subject-chip" onclick="loadAdminSubjectLB('${s}',this)">${s}</button>`).join('')}
+      </div>
+      <div id="adminSubjLbResult"><div class="empty-state"><span class="empty-icon">📚</span><p>Select a subject above</p></div></div>`;
+  }
+}
+
+// Override loadAdminSubjectLB to use inner div
+async function loadAdminSubjectLB(subject, btnEl) {
+  if (btnEl) {
+    document.querySelectorAll('#adminLbTable .subject-chip').forEach(c => c.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+  const el = document.getElementById('adminSubjLbResult');
+  if (!el) return;
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  try {
+    const field = `subjectCoins.${subject}`;
+    const snap = await db.collection('users').where('role','==','student')
+      .orderBy(field,'desc').limit(20).get();
+    const students = snap.docs.map((d,i) => ({
+      rank:i+1,
+      coins: (d.data().subjectCoins||{})[subject]||0,
+      uid:d.id, ...d.data()
+    }));
+    el.innerHTML = renderAdminLBTable(students);
+  } catch(e) { el.innerHTML = `<div class="alert alert-error">${e.message}</div>`; }
+}
+
+// ─── VIEW STUDENT DETAIL ──────────────────────────────────
+async function viewStudentDetail(uid) {
+  const student = allStudents.find(s => s.id === uid);
+  const el = document.getElementById('studentDetailContent');
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  document.getElementById('studentDetailModal').style.display = 'flex';
+
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    const s = doc.data();
+    const av = s.photoURL || defaultAvatar(s.name);
+
+    const attSnap = await db.collection('attempts').where('studentId','==',uid).get();
+    const totalAtt = attSnap.size;
+    const correctAtt = attSnap.docs.filter(d => d.data().isCorrect).length;
+
+    el.innerHTML = `
+      <div style="text-align:center;margin-bottom:1.25rem;">
+        <img src="${av}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);" alt="" onerror="this.src='${defaultAvatar(s.name)}'" />
+        <h3 style="margin-top:.5rem;">${s.name}</h3>
+        <p style="color:var(--gray-400);font-size:.85rem;">Class ${s.class} Student</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
+        <div class="stats-widget"><div class="stat-number">${s.coins||0}</div><div class="stat-desc">🪙 Total Coins</div></div>
+        <div class="stats-widget"><div class="stat-number">${totalAtt}</div><div class="stat-desc">📝 Attempts</div></div>
+        <div class="stats-widget"><div class="stat-number">${correctAtt}</div><div class="stat-desc">✅ Correct</div></div>
+        <div class="stats-widget"><div class="stat-number">${totalAtt ? Math.round((correctAtt/totalAtt)*100) : 0}%</div><div class="stat-desc">🎯 Accuracy</div></div>
+      </div>
+      <div class="section-title">📚 Coins by Subject</div>
+      ${Object.entries(s.subjectCoins||{}).length ? Object.entries(s.subjectCoins||{}).map(([sub,c]) => `
+        <div style="display:flex;justify-content:space-between;padding:.5rem;background:var(--gray-100);border-radius:6px;margin-bottom:.4rem;font-size:.88rem;">
+          <span>${sub}</span><span class="coin-display"><span class="coin-icon">🪙</span>${c}</span>
+        </div>`).join('') : '<p style="color:var(--gray-400);font-size:.88rem;">No subject data yet</p>'}`;
+
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+
+// ─── DELETE ACTIONS ───────────────────────────────────────
+async function deleteUser(uid, role) {
+  if (!confirm(`Are you sure you want to remove this ${role}? This cannot be undone.`)) return;
+  try {
+    await db.collection('users').doc(uid).delete();
+    showToast(`${role} removed successfully.`, 'info');
+    if (role === 'teacher') loadTeachers();
+    else loadStudents();
+    loadOverview();
+  } catch(e) { showToast('Delete failed: ' + e.message, 'error'); }
+}
+
+async function adminDeleteQuestion(qid) {
+  if (!confirm('Delete this question? This cannot be undone.')) return;
+  try {
+    await db.collection('assignments').doc(qid).delete();
+    document.getElementById(`adminCard_${qid}`).remove();
+    showToast('Question deleted.', 'info');
+    loadOverview();
+  } catch(e) { showToast('Delete failed: ' + e.message, 'error'); }
+}
+
+// ─── RESET LEADERBOARDS ───────────────────────────────────
+async function resetWeeklyLeaderboard() {
+  if (!confirm('Reset all weekly coin counts? This cannot be undone.')) return;
+  showLoader(true);
+  try {
+    const snap = await db.collection('users').where('role','==','student').get();
+    const batch = db.batch();
+    snap.forEach(doc => batch.update(doc.ref, { weeklyCoins: 0, currentWeek: getCurrentWeek() }));
+    await batch.commit();
+    showToast('✅ Weekly leaderboard reset!', 'success');
+    loadStudents();
+  } catch(e) { showToast('Reset failed: ' + e.message, 'error'); }
+  showLoader(false);
+}
+
+async function resetMonthlyLeaderboard() {
+  if (!confirm('Reset all monthly coin counts? This cannot be undone.')) return;
+  showLoader(true);
+  try {
+    const snap = await db.collection('users').where('role','==','student').get();
+    const batch = db.batch();
+    snap.forEach(doc => batch.update(doc.ref, { monthlyCoins: 0, currentMonth: getCurrentMonth() }));
+    await batch.commit();
+    showToast('✅ Monthly leaderboard reset!', 'success');
+    loadStudents();
+  } catch(e) { showToast('Reset failed: ' + e.message, 'error'); }
+  showLoader(false);
+}
+
+// ─── EXPORT ───────────────────────────────────────────────
+function exportData() {
+  if (!allStudents.length) { showToast('No student data to export', 'error'); return; }
+  const headers = ['Rank','Name','Class','Total Coins','Weekly','Monthly','Email'];
+  const rows = allStudents.map((s,i) =>
+    [i+1, s.name, `Class ${s.class}`, s.coins||0, s.weeklyCoins||0, s.monthlyCoins||0, s.email||''].join(',')
+  );
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'GPS_Students_Export.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Export started!', 'success');
+}
+
+// ─── TABS ────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.dashboard-layout > .tabs .tab').forEach((t,i) => {
+    const ids = ['overview','teachers','students','questions','leaderboards'];
+    t.classList.toggle('active', ids[i] === name);
+  });
+  document.querySelectorAll('.dashboard-layout > .tab-content').forEach(c => {
+    c.classList.toggle('active', c.id === `tab-${name}`);
+  });
+}
+
+function closeModal(id, e) {
+  if (e.target.id === id) document.getElementById(id).style.display = 'none';
+}
+
+async function handleLogout() {
+  await auth.signOut();
+  window.location.href = '../index.html';
+}
+</script>
+
+<footer class="site-footer">
+  <p>🏫 Government Primary School Pethgam Wagoora &nbsp;|&nbsp; Admin Panel</p>
+</footer>
+</body>
+</html>
