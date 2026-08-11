@@ -3,206 +3,122 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum RoleCode {
+enum Role {
   HOI_ADMIN
   TEACHER
   SCHOOL_AAYA
   SCHOOL_COOK
 }
 
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-}
-
-enum Category {
-  GENERAL
-  ST
-  SC
-  OBC
-}
-
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
-  LEAVE
-  HALF_DAY
-}
-
-enum SchemeType {
-  FREE_TEXTBOOK
-  FREE_UNIFORM
-  DBT_SCHOLARSHIP
-}
-
-enum GradeType {
-  FA
-  SA
-}
-
-enum StockItem {
-  RICE
-  PULSES
-  OIL
-}
-
 model SchoolProfile {
-  id             String    @id @default(cuid())
-  name           String
-  address        String
-  udiseCode      String    @unique
-  contactEmail   String
-  contactPhone   String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  users          User[]
-  students       Student[]
-  mdmInventory   MDMInventory[]
-  mealLogs       MealLog[]
+  id        String         @id @default(cuid())
+  name      String         @default("Government Primary School Pethgam Wagoora")
+  udiseCode String         @unique @default("01022202207")
+  address   String         @default("Wagoora Babareshi Road, Near Zonal Education Office Wagoora 193109")
+  email     String         @default("pspethgam@gmail.com")
+  contact   String         @default("9596449881")
+  users     User[]
+  students  Student[]
+  mdmStock  MDMInventory[]
+  mealLogs  MealLog[]
 }
 
 model User {
-  id             String    @id @default(cuid())
-  name           String
-  email          String?   @unique
-  phone          String?
-  role           RoleCode
-  active         Boolean   @default(true)
-  schoolId       String
-  school         SchoolProfile @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  attendance     Attendance[]
-  grades         Grade[]
-  mealLogs       MealLog[]
-  auditLogs      AuditLog[]
+  id          String            @id @default(cuid())
+  name        String
+  role        Role
+  email       String?           @unique
+  phone       String?
+  schoolId    String?
+  school      SchoolProfile?    @relation(fields: [schoolId], references: [id])
+  attendances Attendance[]      @relation("MarkedByRelation")
+  staffLogs   StaffAttendance[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 }
 
 model Student {
-  id             String    @id @default(cuid())
-  schoolId       String
-  school         SchoolProfile @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  rollNo         String
-  studentName    String
-  classNo        Int
-  gender         Gender?
-  category       Category?
-  bplStatus      Boolean   @default(false)
+  id             String       @id @default(cuid())
+  rollNo         Int
+  name           String
+  classLevel     Int
+  gender         String
+  category       String?
+  bplStatus      Boolean      @default(false)
   aadhaarApaarId String?
   parentName     String?
   contactNumber  String?
-  cwsnStatus     Boolean   @default(false)
-  active         Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  attendance     Attendance[]
+  cwsnStatus     Boolean      @default(false)
+  schoolId       String?
+  school         SchoolProfile? @relation(fields: [schoolId], references: [id])
+  attendances    Attendance[]
   grades         Grade[]
-  schemes        SchemeDistribution[]
+  schemes        Scheme[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
-  @@unique([schoolId, classNo, rollNo])
-  @@index([schoolId, classNo])
+  @@unique([classLevel, rollNo])
 }
 
 model Attendance {
-  id          String           @id @default(cuid())
-  schoolId   String
-  studentId  String?
-  userId     String?
-  date        DateTime
-  status      AttendanceStatus
+  id         String   @id @default(cuid())
+  date       DateTime
+  present    Boolean  @default(true)
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   markedById String?
-  student    Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  school     SchoolProfile @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  markedBy   User?    @relation("AttendanceMarkedBy", fields: [markedById], references: [id])
-  note       String?
+  markedBy   User?    @relation("MarkedByRelation", fields: [markedById], references: [id])
   createdAt  DateTime @default(now())
+}
 
-  @@unique([schoolId, studentId, date])
-  @@index([schoolId, date])
+model StaffAttendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  present   Boolean  @default(true)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model MDMInventory {
-  id          String    @id @default(cuid())
-  schoolId    String
-  item        StockItem
-  openingQty  Float     @default(0)
-  incomingQty Float     @default(0)
-  consumedQty Float     @default(0)
-  closingQty  Float     @default(0)
-  unit        String    @default("kg")
-  threshold   Float     @default(5)
-  date        DateTime
-  school      SchoolProfile @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  @@unique([schoolId, item, date])
+  id          String        @id @default(cuid())
+  item        String
+  quantityKg  Float
+  lastUpdated DateTime      @updatedAt
+  schoolId    String?
+  school      SchoolProfile? @relation(fields: [schoolId], references: [id])
 }
 
 model MealLog {
-  id             String   @id @default(cuid())
-  schoolId       String
-  date           DateTime
-  attendanceHeadcount Int
-  mealsCooked    Int
-  riceGrams      Float
-  pulsesGrams    Float
-  oilGrams       Float
-  notes          String?
-  recordedById   String
-  school         SchoolProfile @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  recordedBy     User @relation(fields: [recordedById], references: [id])
-  createdAt      DateTime @default(now())
-
-  @@unique([schoolId, date])
+  id           String        @id @default(cuid())
+  date         DateTime      @default(now())
+  studentsFed  Int
+  riceUsedKg   Float
+  pulsesUsedKg Float
+  oilUsedLtr   Float
+  schoolId     String?
+  school       SchoolProfile? @relation(fields: [schoolId], references: [id])
 }
 
 model Grade {
-  id         String    @id @default(cuid())
-  schoolId   String
-  studentId  String
-  subject    String
-  gradeType  GradeType
-  assessment String
-  marks      Float
-  maxMarks   Float
-  term       String?
-  enteredById String
-  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  enteredBy  User @relation(fields: [enteredById], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
-
-model SchemeDistribution {
-  id        String     @id @default(cuid())
-  schoolId  String
+  id        String  @id @default(cuid())
+  subject   String
+  term      String
+  marks     Float
+  maxMarks  Float   @default(100)
   studentId String
-  scheme    SchemeType
-  status    String
-  academicYear String
-  note      String?
-  updatedAt DateTime @updatedAt
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, scheme, academicYear])
 }
 
-model AuditLog {
-  id        String   @id @default(cuid())
-  schoolId  String
-  userId    String
-  action    String
-  entity    String
-  entityId  String?
-  metadata  String?
-  createdAt DateTime @default(now())
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  school    SchoolProfile @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  @@index([schoolId, createdAt])
+model Scheme {
+  id         String    @id @default(cuid())
+  schemeName String
+  disbursed  Boolean   @default(false)
+  date       DateTime?
+  studentId  String
+  student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
