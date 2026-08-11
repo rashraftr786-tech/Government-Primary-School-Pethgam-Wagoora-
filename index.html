@@ -1,229 +1,421 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zone Wagoora | Learning Portal</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        :root { --brand-grad: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 50%, #701a75 100%); }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; overscroll-behavior-y: contain; }
-        .app-card { background: var(--brand-grad); border-radius: 2.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
-        .glass { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .input-field { @apply w-full p-4 rounded-2xl bg-slate-100 border-none focus:ring-2 focus:ring-indigo-500 outline-none font-semibold text-sm transition-all; }
-        .nav-active { @apply text-indigo-600 scale-110; }
-        .nav-inactive { @apply text-slate-300; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPS Pethgam Wagoora — Login</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>" />
 </head>
-<body class="text-slate-900">
+<body>
 
-    <div id="auth-screen" class="min-h-screen flex items-center justify-center p-6">
-        <div class="w-full max-w-md bg-white rounded-[3rem] p-8 shadow-2xl border border-slate-100">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 app-card mx-auto mb-4 flex items-center justify-center">
-                    <i class="fas fa-graduation-cap text-white text-3xl"></i>
-                </div>
-                <h1 class="text-2xl font-extrabold tracking-tight text-slate-800">ZONE WAGOORA</h1>
-                <p class="text-indigo-600 font-bold text-xs tracking-widest uppercase">Portal Access</p>
-            </div>
+<!-- Global Loader -->
+<div id="globalLoader" style="display:none;">
+  <div class="spinner"></div>
+  <p style="color:var(--primary);font-weight:600;">Loading…</p>
+</div>
 
-            <div class="flex gap-2 mb-6 p-1 bg-slate-100 rounded-2xl">
-                <button onclick="setRole('student')" id="role-student" class="flex-1 py-3 rounded-xl font-bold text-xs transition-all bg-white shadow-sm text-indigo-600">STUDENT</button>
-                <button onclick="setRole('teacher')" id="role-teacher" class="flex-1 py-3 rounded-xl font-bold text-xs transition-all text-slate-400">TEACHER</button>
-            </div>
+<!-- ═══ AUTH PAGE ══════════════════════════════════════════ -->
+<div class="auth-page">
 
-            <div id="login-box" class="space-y-4">
-                <input type="email" id="login-email" placeholder="Email Address" class="input-field">
-                <input type="password" id="login-pass" placeholder="Password" class="input-field">
-                <button onclick="handleLogin()" class="w-full app-card text-white font-bold py-4 shadow-lg">Sign In</button>
-                <p class="text-center text-sm">New here? <span onclick="toggleView()" class="text-indigo-600 font-bold cursor-pointer">Register</span></p>
-            </div>
+  <div class="auth-brand">
+    <span class="school-icon">🏫</span>
+    <h1>Government Primary School</h1>
+    <p>Pethgam Wagoora — Assignment Portal</p>
+  </div>
 
-            <div id="signup-box" class="hidden space-y-4">
-                <div class="flex flex-col items-center">
-                    <label for="reg-photo" id="photo-label" class="cursor-pointer">
-                        <div id="photo-preview" class="w-20 h-20 rounded-full bg-slate-100 border-4 border-indigo-50 flex items-center justify-center overflow-hidden">
-                            <i class="fas fa-camera text-slate-300"></i>
-                        </div>
-                    </label>
-                    <input type="file" id="reg-photo" class="hidden" onchange="handlePreview(event)">
-                </div>
-                <input type="text" id="reg-name" placeholder="Full Name" class="input-field">
-                <input type="tel" id="reg-whatsapp" placeholder="WhatsApp No" class="input-field">
-                <div id="grade-selector">
-                    <select id="reg-grade" class="input-field">
-                        <option value="1st">Class 1st</option><option value="2nd">Class 2nd</option><option value="3rd">Class 3rd</option>
-                        <option value="4th">Class 4th</option><option value="5th">Class 5th</option><option value="6th">Class 6th</option>
-                        <option value="7th">Class 7th</option><option value="8th">Class 8th</option>
-                    </select>
-                </div>
-                <input type="email" id="reg-email" placeholder="Email" class="input-field">
-                <input type="password" id="reg-pass" placeholder="Password" class="input-field">
-                <button onclick="handleSignup()" id="reg-btn" class="w-full app-card text-white font-bold py-4">Register</button>
-                <p class="text-center text-sm"><span onclick="toggleView()" class="text-indigo-600 font-bold cursor-pointer">Back to Login</span></p>
-            </div>
-        </div>
+  <div class="auth-card">
+
+    <!-- TABS: Login / Sign Up -->
+    <div class="tab-group" id="authTabs">
+      <button class="tab-btn active" onclick="switchAuthTab('login')">Login</button>
+      <button class="tab-btn" onclick="switchAuthTab('signup')">Sign Up</button>
     </div>
 
-    <div id="app-dashboard" class="hidden min-h-screen pb-24">
-        <div class="p-6">
-            <div class="app-card p-6 text-white flex justify-between items-center">
-                <div>
-                    <h2 id="u-name" class="text-2xl font-black italic">Scholar</h2>
-                    <p id="u-role-tag" class="text-[10px] uppercase font-bold opacity-70 tracking-widest mt-1"></p>
-                </div>
-                <img id="u-photo" src="" class="w-14 h-14 rounded-2xl object-cover border-2 border-white/20">
-            </div>
-        </div>
+    <!-- ─── LOGIN FORM ──────────────────────────────────── -->
+    <div id="loginSection">
+      <h2>Welcome Back! 👋</h2>
 
-        <div id="teacher-panel" class="hidden px-6 space-y-6">
-            <h3 class="font-black text-slate-400 text-xs uppercase tracking-widest">Teacher Management</h3>
-            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-                <p class="font-bold text-sm mb-4"><i class="fas fa-user-clock mr-2 text-indigo-600"></i> Pending Student Approvals</p>
-                <div id="pending-list" class="space-y-3">
-                    <p class="text-xs text-slate-400 italic">Checking for new students...</p>
-                </div>
-            </div>
-            <button class="w-full p-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg"><i class="fas fa-plus-circle mr-2"></i> Upload New Question</button>
-        </div>
+      <div id="loginError" class="alert alert-error" style="display:none;"></div>
 
-        <div id="student-panel" class="hidden px-6 space-y-6">
-            <div class="grid grid-cols-2 gap-4" id="subject-list"></div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginEmail">Email / Username</label>
+          <input type="email" id="loginEmail" placeholder="Enter your email" required />
         </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+          <span id="loginBtnText">Login</span>
+        </button>
+      </form>
 
-        <nav class="fixed bottom-6 left-6 right-6 h-20 bg-white shadow-2xl rounded-[2rem] flex justify-around items-center px-4">
-            <button onclick="switchTab('home')" class="flex flex-col items-center nav-active"><i class="fas fa-home text-xl"></i><span class="text-[10px] font-bold mt-1">Home</span></button>
-            <button onclick="switchTab('leader')" class="flex flex-col items-center nav-inactive"><i class="fas fa-trophy text-xl"></i><span class="text-[10px] font-bold mt-1">Ranks</span></button>
-            <button onclick="logout()" class="flex flex-col items-center text-red-400"><i class="fas fa-sign-out-alt text-xl"></i><span class="text-[10px] font-bold mt-1">Exit</span></button>
-        </nav>
+      <p style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--gray-400);">
+        Don't have an account?
+        <a href="#" onclick="switchAuthTab('signup')">Sign Up</a>
+      </p>
     </div>
 
-    <script>
-        // Use your Firebase Config here
-        const firebaseConfig = {
-            apiKey: "AIzaSyCBLLmzxVYuivT15HBPPSxMoS2OzojRgJM",
-            authDomain: "wap-ps-pethgam.firebaseapp.com",
-            projectId: "wap-ps-pethgam",
-            storageBucket: "wap-ps-pethgam.firebasestorage.app",
-            messagingSenderId: "430925411362",
-            appId: "1:430925411362:web:22857dee585d02fc54467b"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+    <!-- ─── SIGNUP SECTION ──────────────────────────────── -->
+    <div id="signupSection" style="display:none;">
+      <h2>Create Account 📝</h2>
 
-        let currentRole = 'student';
-        let userProfile = null;
+      <!-- Role chooser -->
+      <div class="tab-group" id="roleTabs" style="margin-bottom:1.25rem;">
+        <button class="tab-btn active" onclick="switchRoleTab('student')">Student</button>
+        <button class="tab-btn" onclick="switchRoleTab('teacher')">Teacher</button>
+      </div>
 
-        function setRole(role) {
-            currentRole = role;
-            document.getElementById('role-student').className = role === 'student' ? 'flex-1 py-3 rounded-xl font-bold text-xs bg-white shadow-sm text-indigo-600' : 'flex-1 py-3 rounded-xl font-bold text-xs text-slate-400';
-            document.getElementById('role-teacher').className = role === 'teacher' ? 'flex-1 py-3 rounded-xl font-bold text-xs bg-white shadow-sm text-indigo-600' : 'flex-1 py-3 rounded-xl font-bold text-xs text-slate-400';
-            document.getElementById('grade-selector').style.display = role === 'teacher' ? 'none' : 'block';
-        }
+      <div id="signupError" class="alert alert-error" style="display:none;"></div>
 
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            try {
-                const cred = await auth.signInWithEmailAndPassword(email, pass);
-                const doc = await db.collection("users").doc(cred.user.uid).get();
-                userProfile = doc.data();
-                
-                if(userProfile.role !== currentRole) { alert(`This account is registered as a ${userProfile.role}.`); auth.signOut(); return; }
-                if(userProfile.role === 'student' && !userProfile.approved) { alert("Your account is pending teacher approval."); auth.signOut(); return; }
-                
-                showDashboard();
-            } catch (e) { alert(e.message); }
-        }
+      <!-- ── Student Signup ── -->
+      <form id="studentSignupForm" onsubmit="handleStudentSignup(event)">
+        <div class="form-group">
+          <label>Profile Photo</label>
+          <div class="photo-upload-area" id="studentPhotoArea">
+            <input type="file" id="studentPhoto" accept="image/*" onchange="previewPhoto('studentPhoto','studentPhotoPreview','studentPhotoArea')" />
+            <img id="studentPhotoPreview" class="photo-preview" src="" alt="" style="display:none;" />
+            <div id="studentPhotoPlaceholder">
+              <span class="upload-icon">📷</span>
+              <p style="color:var(--primary);font-weight:600;font-size:.9rem;">Tap to Upload Photo</p>
+              <p class="upload-hint">JPG, PNG (Max 2MB)</p>
+            </div>
+          </div>
+        </div>
 
-        async function handleSignup() {
-            const btn = document.getElementById('reg-btn');
-            const file = document.getElementById('reg-photo').files[0];
-            const name = document.getElementById('reg-name').value;
-            btn.disabled = true;
+        <div class="form-group">
+          <label for="studentName">Full Name</label>
+          <input type="text" id="studentName" placeholder="Enter your full name" required />
+        </div>
 
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(document.getElementById('reg-email').value, document.getElementById('reg-pass').value);
-                let photoURL = "https://ui-avatars.com/api/?name=" + name;
-                
-                if(file) {
-                    const ref = storage.ref(`users/${cred.user.uid}`);
-                    await ref.put(file);
-                    photoURL = await ref.getDownloadURL();
-                }
+        <div class="form-group">
+          <label for="studentClass">Class</label>
+          <select id="studentClass" required>
+            <option value="">Select Your Class</option>
+            <option value="1">Class 1st</option>
+            <option value="2">Class 2nd</option>
+            <option value="3">Class 3rd</option>
+            <option value="4">Class 4th</option>
+            <option value="5">Class 5th</option>
+            <option value="6">Class 6th</option>
+            <option value="7">Class 7th</option>
+            <option value="8">Class 8th</option>
+          </select>
+        </div>
 
-                await db.collection("users").doc(cred.user.uid).set({
-                    uid: cred.user.uid, fullName: name, whatsapp: document.getElementById('reg-whatsapp').value,
-                    grade: currentRole === 'teacher' ? 'Staff' : document.getElementById('reg-grade').value,
-                    photo: photoURL, role: currentRole, coins: 0, approved: currentRole === 'teacher' ? true : false, completed: []
-                });
+        <div class="form-group">
+          <label for="studentEmail">Email</label>
+          <input type="email" id="studentEmail" placeholder="student@example.com" required />
+        </div>
 
-                alert(currentRole === 'teacher' ? "Teacher Account Created!" : "Registered! Wait for Teacher Approval.");
-                location.reload();
-            } catch (e) { alert(e.message); btn.disabled = false; }
-        }
+        <div class="form-group">
+          <label for="studentPassword">Password (min 6 characters)</label>
+          <input type="password" id="studentPassword" placeholder="Create a password" minlength="6" required />
+        </div>
 
-        function showDashboard() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('app-dashboard').classList.remove('hidden');
-            document.getElementById('u-name').innerText = userProfile.fullName;
-            document.getElementById('u-role-tag').innerText = userProfile.role === 'teacher' ? "Teaching Faculty" : "Class " + userProfile.grade;
-            document.getElementById('u-photo').src = userProfile.photo;
+        <button type="submit" class="btn btn-primary" id="studentSignupBtn">
+          Create Student Account
+        </button>
+      </form>
 
-            if(userProfile.role === 'teacher') {
-                document.getElementById('teacher-panel').classList.remove('hidden');
-                loadPendingStudents();
-            } else {
-                document.getElementById('student-panel').classList.remove('hidden');
-                renderSubjects();
-            }
-        }
+      <!-- ── Teacher Signup ── -->
+      <form id="teacherSignupForm" onsubmit="handleTeacherSignup(event)" style="display:none;">
+        <div class="form-group">
+          <label>Profile Photo</label>
+          <div class="photo-upload-area" id="teacherPhotoArea">
+            <input type="file" id="teacherPhoto" accept="image/*" onchange="previewPhoto('teacherPhoto','teacherPhotoPreview','teacherPhotoArea')" />
+            <img id="teacherPhotoPreview" class="photo-preview" src="" alt="" style="display:none;" />
+            <div id="teacherPhotoPlaceholder">
+              <span class="upload-icon">📷</span>
+              <p style="color:var(--primary);font-weight:600;font-size:.9rem;">Tap to Upload Photo</p>
+              <p class="upload-hint">JPG, PNG (Max 2MB)</p>
+            </div>
+          </div>
+        </div>
 
-        async function loadPendingStudents() {
-            const list = document.getElementById('pending-list');
-            const snap = await db.collection("users").where("role","==","student").where("approved","==",false).get();
-            if(snap.empty) { list.innerHTML = "<p class='text-xs text-green-500 font-bold'>All students approved! ✅</p>"; return; }
-            
-            list.innerHTML = "";
-            snap.forEach(doc => {
-                const s = doc.data();
-                list.innerHTML += `
-                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <div class="flex items-center gap-3">
-                            <img src="${s.photo}" class="w-10 h-10 rounded-lg object-cover">
-                            <div><p class="text-xs font-bold">${s.fullName}</p><p class="text-[8px] uppercase opacity-50">${s.grade} | ${s.whatsapp}</p></div>
-                        </div>
-                        <button onclick="approveStudent('${s.uid}')" class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-2 rounded-lg">APPROVE</button>
-                    </div>`;
-            });
-        }
+        <div class="form-group">
+          <label for="teacherName">Full Name</label>
+          <input type="text" id="teacherName" placeholder="Enter your full name" required />
+        </div>
 
-        async function approveStudent(uid) {
-            await db.collection("users").doc(uid).update({ approved: true });
-            alert("Student Approved!"); loadPendingStudents();
-        }
+        <div class="form-group">
+          <label for="teacherSubject">Primary Subject</label>
+          <select id="teacherSubject" required>
+            <option value="">Select Subject</option>
+            <option value="English">English</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Urdu">Urdu</option>
+            <option value="Kashmiri">Kashmiri</option>
+            <option value="EVS">EVS</option>
+            <option value="Science">Science</option>
+            <option value="Social Science">Social Science</option>
+          </select>
+        </div>
 
-        function renderSubjects() {
-            const grid = document.getElementById('subject-list');
-            const subs = ["English", "Mathematics", "Science", "Urdu"];
-            grid.innerHTML = subs.map(s => `<div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 flex flex-col items-center">
-                <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-2"><i class="fas fa-book"></i></div>
-                <p class="font-bold text-xs">${s}</p></div>`).join('');
-        }
+        <div class="form-group">
+          <label for="teacherEmail">Email</label>
+          <input type="email" id="teacherEmail" placeholder="teacher@example.com" required />
+        </div>
 
-        function handlePreview(e) { document.getElementById('photo-preview').innerHTML = `<img src="${URL.createObjectURL(e.target.files[0])}" class="w-full h-full object-cover">`; }
-        function toggleView() { document.getElementById('login-box').classList.toggle('hidden'); document.getElementById('signup-box').classList.toggle('hidden'); }
-        function logout() { auth.signOut().then(() => location.reload()); }
-    </script>
+        <div class="form-group">
+          <label for="teacherPassword">Password (min 6 characters)</label>
+          <input type="password" id="teacherPassword" placeholder="Create a password" minlength="6" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="teacherSignupBtn">
+          Create Teacher Account
+        </button>
+      </form>
+
+      <p style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--gray-400);">
+        Already have an account?
+        <a href="#" onclick="switchAuthTab('login')">Login</a>
+      </p>
+    </div><!-- /signupSection -->
+
+  </div><!-- /auth-card -->
+
+  <p style="color:rgba(255,255,255,.65);font-size:.75rem;margin-top:1rem;text-align:center;">
+    © 2024 GPS Pethgam Wagoora | Powered by Firebase
+  </p>
+</div><!-- /auth-page -->
+
+<!-- Firebase SDKs (Compat v9) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+<script src="js/firebase-config.js"></script>
+
+<script>
+// ──────────────────────────────────────────────────────────
+// AUTH STATE: redirect if already logged in
+// ──────────────────────────────────────────────────────────
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    showLoader(true);
+    try {
+      const doc = await db.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        const role = doc.data().role;
+        redirectByRole(role);
+        return;
+      }
+    } catch (e) {}
+    showLoader(false);
+  }
+});
+
+function redirectByRole(role) {
+  const map = { admin: 'pages/admin.html', teacher: 'pages/teacher.html', student: 'pages/student.html' };
+  if (map[role]) window.location.href = map[role];
+  else showLoader(false);
+}
+
+// ──────────────────────────────────────────────────────────
+// TAB SWITCHING
+// ──────────────────────────────────────────────────────────
+function switchAuthTab(tab) {
+  const btns = document.querySelectorAll('#authTabs .tab-btn');
+  document.getElementById('loginSection').style.display  = tab === 'login'  ? 'block' : 'none';
+  document.getElementById('signupSection').style.display = tab === 'signup' ? 'block' : 'none';
+  btns[0].classList.toggle('active', tab === 'login');
+  btns[1].classList.toggle('active', tab === 'signup');
+  clearErrors();
+}
+
+function switchRoleTab(role) {
+  const btns = document.querySelectorAll('#roleTabs .tab-btn');
+  document.getElementById('studentSignupForm').style.display = role === 'student' ? 'block' : 'none';
+  document.getElementById('teacherSignupForm').style.display = role === 'teacher' ? 'block' : 'none';
+  btns[0].classList.toggle('active', role === 'student');
+  btns[1].classList.toggle('active', role === 'teacher');
+}
+
+function clearErrors() {
+  ['loginError','signupError'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.textContent = ''; }
+  });
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+// ──────────────────────────────────────────────────────────
+// PHOTO PREVIEW
+// ──────────────────────────────────────────────────────────
+function previewPhoto(inputId, previewId, areaId) {
+  const file  = document.getElementById(inputId).files[0];
+  const prev  = document.getElementById(previewId);
+  const placeholder = document.getElementById(areaId.replace('Area','Placeholder'))
+                   || document.getElementById(inputId.replace('Photo','PhotoPlaceholder'));
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      prev.src = e.target.result;
+      prev.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// LOGIN
+// ──────────────────────────────────────────────────────────
+async function handleLogin(e) {
+  e.preventDefault();
+  clearErrors();
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPassword').value;
+  const btn   = document.getElementById('loginBtn');
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:3px;"></div>';
+
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    // onAuthStateChanged will handle redirect
+  } catch (err) {
+    let msg = 'Login failed. Please check your credentials.';
+    if (err.code === 'auth/user-not-found') msg = 'No account found with this email.';
+    else if (err.code === 'auth/wrong-password') msg = 'Incorrect password.';
+    else if (err.code === 'auth/invalid-email') msg = 'Invalid email address.';
+    else if (err.code === 'auth/too-many-requests') msg = 'Too many attempts. Try later.';
+    showError('loginError', msg);
+    btn.disabled = false;
+    btn.innerHTML = '<span id="loginBtnText">Login</span>';
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// UPLOAD PHOTO TO FIREBASE STORAGE
+// ──────────────────────────────────────────────────────────
+async function uploadPhoto(file, uid, folder) {
+  if (!file) return null;
+  const ext = file.name.split('.').pop();
+  const ref = storage.ref(`${folder}/${uid}.${ext}`);
+  await ref.put(file);
+  return await ref.getDownloadURL();
+}
+
+// ──────────────────────────────────────────────────────────
+// STUDENT SIGNUP
+// ──────────────────────────────────────────────────────────
+async function handleStudentSignup(e) {
+  e.preventDefault();
+  clearErrors();
+
+  const name    = document.getElementById('studentName').value.trim();
+  const cls     = parseInt(document.getElementById('studentClass').value);
+  const email   = document.getElementById('studentEmail').value.trim();
+  const pass    = document.getElementById('studentPassword').value;
+  const photo   = document.getElementById('studentPhoto').files[0];
+  const btn     = document.getElementById('studentSignupBtn');
+
+  if (!name || !cls || !email || !pass) {
+    showError('signupError', 'Please fill in all fields.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating Account…';
+  showLoader(true);
+
+  try {
+    const cred    = await auth.createUserWithEmailAndPassword(email, pass);
+    const uid     = cred.user.uid;
+    let photoURL  = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=1a7a3c&color=fff&size=128';
+
+    if (photo) {
+      try { photoURL = await uploadPhoto(photo, uid, 'profile_photos'); } catch(pe) {}
+    }
+
+    await db.collection('users').doc(uid).set({
+      name, email, role: 'student',
+      class: cls,
+      photoURL,
+      coins: 0,
+      weeklyCoins: 0,
+      monthlyCoins: 0,
+      subjectCoins: {},
+      currentWeek: getCurrentWeek(),
+      currentMonth: getCurrentMonth(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    showToast('Account created! Welcome ' + name + '!', 'success');
+    // redirect handled by onAuthStateChanged
+
+  } catch (err) {
+    showLoader(false);
+    let msg = 'Signup failed. Please try again.';
+    if (err.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
+    else if (err.code === 'auth/invalid-email') msg = 'Invalid email address.';
+    else if (err.code === 'auth/weak-password') msg = 'Password is too weak (min 6 chars).';
+    showError('signupError', msg);
+    btn.disabled = false;
+    btn.textContent = 'Create Student Account';
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// TEACHER SIGNUP
+// ──────────────────────────────────────────────────────────
+async function handleTeacherSignup(e) {
+  e.preventDefault();
+  clearErrors();
+
+  const name    = document.getElementById('teacherName').value.trim();
+  const subject = document.getElementById('teacherSubject').value;
+  const email   = document.getElementById('teacherEmail').value.trim();
+  const pass    = document.getElementById('teacherPassword').value;
+  const photo   = document.getElementById('teacherPhoto').files[0];
+  const btn     = document.getElementById('teacherSignupBtn');
+
+  if (!name || !subject || !email || !pass) {
+    showError('signupError', 'Please fill in all fields.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating Account…';
+  showLoader(true);
+
+  try {
+    const cred    = await auth.createUserWithEmailAndPassword(email, pass);
+    const uid     = cred.user.uid;
+    let photoURL  = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=1a7a3c&color=fff&size=128';
+
+    if (photo) {
+      try { photoURL = await uploadPhoto(photo, uid, 'profile_photos'); } catch(pe) {}
+    }
+
+    await db.collection('users').doc(uid).set({
+      name, email, role: 'teacher',
+      subject,
+      photoURL,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    showToast('Account created! Welcome ' + name + '!', 'success');
+
+  } catch (err) {
+    showLoader(false);
+    let msg = 'Signup failed. Please try again.';
+    if (err.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
+    else if (err.code === 'auth/weak-password') msg = 'Password is too weak (min 6 chars).';
+    showError('signupError', msg);
+    btn.disabled = false;
+    btn.textContent = 'Create Teacher Account';
+  }
+}
+</script>
 </body>
 </html>
