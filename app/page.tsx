@@ -28,7 +28,8 @@ export default async function ReportCardPage({
     <main className="mx-auto max-w-3xl bg-white p-8 print:p-4">
       <header className="border-b-2 pb-4 text-center">
         <h1 className="text-xl font-bold">
-          {student.school?.name ?? "Government Primary School Pethgam Wagoora"}
+          {student.school?.name ??
+            "Government Primary School Pethgam Wagoora"}
         </h1>
 
         <p className="text-sm">
@@ -69,22 +70,22 @@ export default async function ReportCardPage({
         </thead>
 
         <tbody>
-          {student.grades.map((g) => (
-            <tr key={g.id}>
+          {student.grades.map((grade) => (
+            <tr key={grade.id}>
               <td className="border p-2">
-                {g.subject}
+                {grade.subject}
               </td>
 
               <td className="border p-2 text-center">
-                {g.term}
+                {grade.term}
               </td>
 
               <td className="border p-2 text-center">
-                {g.marks}
+                {grade.marks}
               </td>
 
               <td className="border p-2 text-center">
-                {g.maxMarks}
+                {grade.maxMarks}
               </td>
             </tr>
           ))}
